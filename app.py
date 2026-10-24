@@ -1,4 +1,4 @@
-import json, os
+import json, os, io
 from datetime import datetime, timezone
 from typing import Any
 import streamlit as st
@@ -58,7 +58,10 @@ def ask_gemini(prompt, image=None, history=None):
     for turn in history or []:
         contents.append(types.Content(role=turn["role"],parts=[types.Part.from_text(text=turn["text"])]))
     parts=[types.Part.from_text(text=prompt)]
-    if image is not None: parts.append(image)
+    if image is not None:
+        buffer = io.BytesIO()
+        image.save(buffer, format="JPEG")
+        parts.append(types.Part.from_bytes(data=buffer.getvalue(), mime_type="image/jpeg"))
     contents.append(types.Content(role="user",parts=parts))
     last=None
     for model in MODELS:
